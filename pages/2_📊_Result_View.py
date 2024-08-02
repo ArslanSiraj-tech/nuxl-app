@@ -29,27 +29,34 @@ def process_mzML_file(filepath):
     MSExperiment: An MSExperiment object containing the normalized MS2 spectra.
     """
 
-    exp = MSExperiment()
-    MzMLFile().load(filepath, exp)
+    try:
+        # Initialize an MSExperiment object
+        exp = MSExperiment()
+        
+        # Load the mzML file into the MSExperiment object
+        MzMLFile().load(filepath, exp)
 
-    # Create a new MSExperiment object to store MS2 spectra
-    MS2 = MSExperiment()
-    
-    # Iterate over all spectra in the experiment
-    for spec in exp:
-        # Check if the spectrum is an MS2 spectrum
-        if spec.getMSLevel() == 2:
-            # Add the MS2 spectrum to the MS2 experiment object
-            MS2.addSpectrum(spec)
+        # Create a new MSExperiment object to store MS2 spectra
+        MS2 = MSExperiment()
+        
+        # Iterate over all spectra in the experiment
+        for spec in exp:
+            # Check if the spectrum is an MS2 spectrum
+            if spec.getMSLevel() == 2:
+                # Add the MS2 spectrum to the MS2 experiment object
+                MS2.addSpectrum(spec)
 
-    # Normalize peak intensities in the MS2 spectra
-    normalizer = Normalizer()  # Create a Normalizer object
-    param = normalizer.getParameters()  # Get the default parameters
-    param.setValue("method", "to_one")  # Set normalization method to "to_one"
-    normalizer.setParameters(param)  # Apply the parameters to the normalizer
-    normalizer.filterPeakMap(MS2)  # Normalize the peaks in the MS2 spectra
+        # Normalize peak intensities in the MS2 spectra
+        normalizer = Normalizer()  # Create a Normalizer object
+        param = normalizer.getParameters()  # Get the default parameters
+        param.setValue("method", "to_one")  # Set normalization method to "to_one"
+        normalizer.setParameters(param)  # Apply the parameters to the normalizer
+        normalizer.filterPeakMap(MS2)  # Normalize the peaks in the MS2 spectra
 
-    return MS2  # Return the MSExperiment object containing normalized MS2 spectra
+        return MS2  # Return the MSExperiment object containing normalized MS2 spectra
+
+    except Exception as e:
+        return None  # Return None if any exception occurs
 
 def get_mz_intensities_from_ms2(MS2_spectras, native_id):
     """
@@ -135,8 +142,9 @@ with tabs[0]:
                 file_name_wout_out = "Example_RNA_UV_XL"
 
             MS2 = process_mzML_file(os.path.join(Path.cwd().parent ,  str(st.session_state.workspace)[3:] , "mzML-files" ,f"{file_name_wout_out}.mzML"))
-
-            #check if dataframe is None
+            if MS2 is None:
+                st.warning("The corresponding " + file_name_wout_out + ".mzML file could not be found. Please re-upload the mzML file to visualize all peaks.")
+                            
             if CSM_ is None: 
                 st.warning("No CSMs found in selected idXML file")
             else:
@@ -167,29 +175,31 @@ with tabs[0]:
                     selected_row = data["selected_rows"]
 
                     if selected_row:
-                        mz_full, inten_full = get_mz_intensities_from_ms2(MS2_spectras=MS2, native_id=selected_row[0]['SpecId'])
-
                         # Create a dictionary of annotation features
                         annotation_data_idxml = {'intarray': [float(value) for value in {selected_row[0]['intensities']}.pop().split(',')],
                                 'mzarray': [float(value) for value in {selected_row[0]['mz_values']}.pop().split(',')],
                                 'anotarray': [str(value) for value in {selected_row[0]['ions']}.pop().split(',')]
                             }
-                        
-                        annotation_df_idxml = pd.DataFrame(annotation_data_idxml)
                             
-                        # Convert annotation_data into a list of tuples for easy matching
-                        annotation_dict = {(i, mz): anot for i, mz, anot in zip(annotation_data_idxml['intarray'], annotation_data_idxml['mzarray'], annotation_data_idxml['anotarray'])}
+                        if MS2 is not None:
+                            mz_full, inten_full = get_mz_intensities_from_ms2(MS2_spectras=MS2, native_id=selected_row[0]['SpecId'])
+                                
+                            # Convert annotation_data into a list of tuples for easy matching
+                            annotation_dict = {(i, mz): anot for i, mz, anot in zip(annotation_data_idxml['intarray'], annotation_data_idxml['mzarray'], annotation_data_idxml['anotarray'])}
 
-                        # Annotate the data
-                        annotation_data = []
-                        for intensity, mz in zip(inten_full, mz_full):
-                            annotation = annotation_dict.get((intensity, mz), ' ')
-                            annotation_data.append({
-                                'intarray': float(intensity),
-                                'mzarray': float(mz),
-                                'anotarray': str(annotation)
-                            })                        
-
+                            # Annotate the data
+                            annotation_data = []
+                            for intensity, mz in zip(inten_full, mz_full):
+                                annotation = annotation_dict.get((intensity, mz), ' ')
+                                annotation_data.append({
+                                    'intarray': float(intensity),
+                                    'mzarray': float(mz),
+                                    'anotarray': str(annotation)
+                                })  
+                        
+                        if MS2 is None:
+                            annotation_data = annotation_data_idxml # just provide the annotated peaks
+ 
                         # Check if the lists are not empty
                         if annotation_data:
                             # Create the DataFrame
