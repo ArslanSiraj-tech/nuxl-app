@@ -2,9 +2,10 @@ import streamlit as st
 from src.common import *
 from src.result_files import *
 import plotly.graph_objects as go
-from src.view import plot_ms2_spectrum
+from src.view import plot_ms2_spectrum, plot_ms2_spectrum_full
 from st_aggrid import GridOptionsBuilder, AgGrid, GridUpdateMode, ColumnsAutoSizeMode
 from src.captcha_ import *
+from pyopenms import *
 
 params = page_setup()
 
@@ -12,7 +13,81 @@ params = page_setup()
 if 'controllo' not in st.session_state or params["controllo"] == False:
     # Apply captcha by calling the captcha_control function
     captcha_control()
-        
+
+
+##################################
+
+#TODO move to src folder
+def process_mzML_file(filepath):
+    """
+    Loads an mzML file, extracts MS2 spectra, and normalizes the peak intensities.
+
+    Parameters:
+    filepath (str): The file path to the mzML file.
+
+    Returns:
+    MSExperiment: An MSExperiment object containing the normalized MS2 spectra.
+    """
+
+    exp = MSExperiment()
+    MzMLFile().load(filepath, exp)
+
+    # Create a new MSExperiment object to store MS2 spectra
+    MS2 = MSExperiment()
+    
+    # Iterate over all spectra in the experiment
+    for spec in exp:
+        # Check if the spectrum is an MS2 spectrum
+        if spec.getMSLevel() == 2:
+            # Add the MS2 spectrum to the MS2 experiment object
+            MS2.addSpectrum(spec)
+
+    # Normalize peak intensities in the MS2 spectra
+    normalizer = Normalizer()  # Create a Normalizer object
+    param = normalizer.getParameters()  # Get the default parameters
+    param.setValue("method", "to_one")  # Set normalization method to "to_one"
+    normalizer.setParameters(param)  # Apply the parameters to the normalizer
+    normalizer.filterPeakMap(MS2)  # Normalize the peaks in the MS2 spectra
+
+    return MS2  # Return the MSExperiment object containing normalized MS2 spectra
+
+def get_mz_intensities_from_ms2(MS2_spectras, native_id):
+    """
+    Extracts m/z values and corresponding intensities from an MS2 spectrum with a specified native ID.
+
+    Parameters:
+    MS2_spectras (MSExperiment): An MSExperiment object containing MS2 spectra.
+    native_id (str): The native ID of the desired MS2 spectrum.
+
+    Returns:
+    tuple: A tuple containing two arrays:
+        - mz (list): List of m/z values.
+        - intensities (list): List of corresponding intensity values.
+
+    If the specified native ID is not found, the function returns None.
+    """
+    # Iterate through all spectra in the provided MS2_spectras object
+    for spectrum in MS2_spectras.getSpectra():
+        # Check if the current spectrum's native ID matches the specified native ID
+        if spectrum.getNativeID() == native_id:
+            # Extract m/z values and corresponding intensities from the spectrum
+            mz, intensities = spectrum.get_peaks()
+            # Return the m/z values and intensities as a tuple
+            return mz, intensities
+    
+    # If the native ID is not found, return None
+    return None
+
+def remove_substrings(original_string, substrings_to_remove):
+    modified_string = original_string
+    for substring in substrings_to_remove:
+        modified_string = modified_string.replace(substring, "")
+    return modified_string
+
+nuxl_out_pattern = ["_perc_0.0100_XLs.idXML", "_0.0100_XLs.idXML", "_perc_0.1000_XLs.idXML", "_0.1000_XLs.idXML", "_perc_1.0000_XLs.idXML", "_1.0000_XLs.idXML"]
+
+########################
+
 ### main content of page
 
 # Make sure "selected-result-files" is in session state
@@ -52,6 +127,15 @@ with tabs[0]:
             #take all CSMs as dataframe
             CSM_= readAndProcessIdXML(workspace_path / "result-files" /f"{selected_file}")
 
+            ##TODO setup more better/effiecient
+            # Remove the out pattern of idxml
+            file_name_wout_out = remove_substrings(selected_file, nuxl_out_pattern)
+
+            if file_name_wout_out == "Example": 
+                file_name_wout_out = "Example_RNA_UV_XL"
+
+            MS2 = process_mzML_file(os.path.join(Path.cwd().parent ,  str(st.session_state.workspace)[3:] , "mzML-files" ,f"{file_name_wout_out}.mzML"))
+
             #check if dataframe is None
             if CSM_ is None: 
                 st.warning("No CSMs found in selected idXML file")
@@ -83,21 +167,37 @@ with tabs[0]:
                     selected_row = data["selected_rows"]
 
                     if selected_row:
+                        mz_full, inten_full = get_mz_intensities_from_ms2(MS2_spectras=MS2, native_id=selected_row[0]['SpecId'])
 
                         # Create a dictionary of annotation features
-                        annotation_data = {'intarray': [float(value) for value in {selected_row[0]['intensities']}.pop().split(',')],
+                        annotation_data_idxml = {'intarray': [float(value) for value in {selected_row[0]['intensities']}.pop().split(',')],
                                 'mzarray': [float(value) for value in {selected_row[0]['mz_values']}.pop().split(',')],
                                 'anotarray': [str(value) for value in {selected_row[0]['ions']}.pop().split(',')]
                             }
                         
+                        annotation_df_idxml = pd.DataFrame(annotation_data_idxml)
+                            
+                        # Convert annotation_data into a list of tuples for easy matching
+                        annotation_dict = {(i, mz): anot for i, mz, anot in zip(annotation_data_idxml['intarray'], annotation_data_idxml['mzarray'], annotation_data_idxml['anotarray'])}
+
+                        # Annotate the data
+                        annotation_data = []
+                        for intensity, mz in zip(inten_full, mz_full):
+                            annotation = annotation_dict.get((intensity, mz), ' ')
+                            annotation_data.append({
+                                'intarray': float(intensity),
+                                'mzarray': float(mz),
+                                'anotarray': str(annotation)
+                            })                        
+
                         # Check if the lists are not empty
-                        if annotation_data['intarray'] and annotation_data['mzarray'] and annotation_data['anotarray']:
+                        if annotation_data:
                             # Create the DataFrame
                             annotation_df = pd.DataFrame(annotation_data)
                             # title of spectra
                             spectra_name = os.path.splitext(selected_file)[0] +" Scan# " + str({selected_row[0]['ScanNr']}).strip('{}') + " Pep: " + str({selected_row[0]['Peptide']}).strip('{}\'') +  " + " +str ({selected_row[0]['NuXL:NA']}).strip('{}\'')
                             # generate ms2 spectra
-                            fig = plot_ms2_spectrum(annotation_df, spectra_name, "black")
+                            fig = plot_ms2_spectrum_full(annotation_df, spectra_name, "black")
                             #show figure
                             show_fig(fig,  f"{os.path.splitext(selected_file)[0]}_scan_{str({selected_row[0]['ScanNr']}).strip('{}')}")
 
