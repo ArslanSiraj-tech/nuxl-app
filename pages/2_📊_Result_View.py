@@ -180,22 +180,30 @@ with tabs[0]:
                                 'mzarray': [float(value) for value in {selected_row[0]['mz_values']}.pop().split(',')],
                                 'anotarray': [str(value) for value in {selected_row[0]['ions']}.pop().split(',')]
                             }
+                        
+                        #annotation_data_idxml_df = pd.DataFrame(annotation_data_idxml)
+                        #annotation_data_idxml_df.to_csv(str(selected_row[0]['ScanNr']) + "_idxml_annot.csv")
                             
                         if MS2 is not None:
+                            # Extract m/z and intensity data from the selected MS2 spectrum
                             mz_full, inten_full = get_mz_intensities_from_ms2(MS2_spectras=MS2, native_id=selected_row[0]['SpecId'])
-                                
-                            # Convert annotation_data into a list of tuples for easy matching
-                            annotation_dict = {(i, mz): anot for i, mz, anot in zip(annotation_data_idxml['intarray'], annotation_data_idxml['mzarray'], annotation_data_idxml['anotarray'])}
 
+                            # Convert annotation_data into a dictionary for efficient matching
+                            annotation_dict = {(round(mz, 6), round(i, 6)): anot for i, mz, anot in zip(annotation_data_idxml['intarray'], annotation_data_idxml['mzarray'], annotation_data_idxml['anotarray'])}
+                            
                             # Annotate the data
                             annotation_data = []
                             for intensity, mz in zip(inten_full, mz_full):
-                                annotation = annotation_dict.get((intensity, mz), ' ')
+                                mz_r = round(float(mz), 6)
+                                int_r = round(float(intensity), 6)
+
+                                annotation = annotation_dict.get((mz_r, int_r), ' ')
+
                                 annotation_data.append({
-                                    'intarray': float(intensity),
-                                    'mzarray': float(mz),
-                                    'anotarray': str(annotation)
-                                })  
+                                    'mzarray': mz_r,
+                                    'intarray': int_r,
+                                    'anotarray': annotation
+                                }) 
                         
                         if MS2 is None:
                             annotation_data = annotation_data_idxml # just provide the annotated peaks
