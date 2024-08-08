@@ -3,16 +3,15 @@ name: streamlit-env
 channels:
   - conda-forge
 dependencies:
-  - python=3.10
-  - plotly
-  - pip
-  - numpy
-  - pandas
-  - mono
+  - python=3.11.4
+  - plotly==5.22.0
+  - pip==24.0
+  - pandas==2.0.3
+  - mono==6.12.0.90
+  - numpy==1.26.4 #dependency depend on pyopenms version
   - pip: # dependencies only available through pip
       # streamlit dependencies
-    - streamlit==1.27.0
+    - streamlit==1.29.0
     - streamlit-plotly-events==0.0.6
     - streamlit-aggrid==0.3.4.post3
-    - pyopenms
-    - captcha 
+    - captcha==0.5.0
