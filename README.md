@@ -12,13 +12,13 @@ Welcome to the OpenMS NuXL App, a web application for the NuXL protein-nucleic a
 
 <img src="assets/OpenMS.png" width=20%>
   
-## Running NuXL locally: Installation as stand-alone tool
+<!-- ## Running NuXL locally: Installation as stand-alone tool
 ### Windows
 1. To get started, download and extract the [OpenMS-App.zip](https://github.com/Arslan-Siraj/nuxl-app/actions) file from latest successfull action.
 2. Run the `run_app.exe`
-3. Use app in your default browser <br/>
+3. Use app in your default browser <br/> 
 
-The workspaces for the project will be locally generated in the `workspaces-nuxl-app` directory, and the analysis will run using local resources.
+The workspaces for the project will be locally generated in the `workspaces-nuxl-app` directory, and the analysis will run using local resources. -->
    
 ## Quickstart 
 
