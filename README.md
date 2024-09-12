@@ -43,7 +43,7 @@ Once the analysis completed successfully, the output table will be displayed on 
 Here, you can visualize and explore the output of the search engine. All crosslink output files in the workspace are available on the **View Results** tab.
 After selecting any file, you can view the `CSMs Table`, `PRTs Table`, `PRTs Summary`, `Crosslink efficiency` and `Precursor adducts summary`.
 
-Note: Every table and plot can be downloaded, as indicated in the side-bar under ⚙️ Settings.
+Note: Every table and plot can be downloaded, as indicated formats in the side-bar under ⚙️ Settings.
 
 ## How to accessing previously analysed results?
 Under the **Result Files** tab, you can manage your results. You can `remove` or `download` files from the output files list.
