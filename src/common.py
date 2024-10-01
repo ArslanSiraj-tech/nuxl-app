@@ -235,7 +235,7 @@ You can share this unique workspace ID with other people.
                 img_formats.index(params["image-format"]), key="image-format"
             )
 
-            table_formats = ["tsv", "csv", "xlsx"]
+            table_formats = ["tsv", "csv"] #,"xlsx"
             st.selectbox(
                 "table export format",
                 table_formats,
@@ -297,7 +297,7 @@ def show_table(df: pd.DataFrame, download_name: str = "") -> None:
                 df.to_csv(sep="\t").encode("utf-8"),
                 download_name.replace(" ", "-") + ".tsv", help="download table in tsv format"
             )
-        elif st.session_state["table-format"] == "xlsx":
+        '''elif st.session_state["table-format"] == "xlsx":
             import io
             output = io.BytesIO()
             with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
@@ -307,7 +307,7 @@ def show_table(df: pd.DataFrame, download_name: str = "") -> None:
                 "Download Table",
                 output,
                 download_name.replace(" ", "-") + ".xlsx", help="download table in xlsx format"
-            )
+            )'''
             
     return df
 
@@ -336,7 +336,7 @@ def download_table(df: pd.DataFrame, download_name: str = "") -> None:
                 df.to_csv(sep="\t").encode("utf-8"),
                 download_name.replace(" ", "-") + ".tsv", help="download table in tsv format"
             )
-        elif st.session_state["table-format"] == "xlsx":
+        '''elif st.session_state["table-format"] == "xlsx":
             import io
             output = io.BytesIO()
             with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
@@ -346,7 +346,7 @@ def download_table(df: pd.DataFrame, download_name: str = "") -> None:
                 "Download Table",
                 output,
                 download_name.replace(" ", "-") + ".xlsx", help="download table in xlsx format"
-            )
+            )'''
 
 def show_fig(fig, download_name: str, container_width: bool = True) -> None:
     """
