@@ -3,13 +3,26 @@ import os
 import shutil
 import sys
 import uuid
-import json
+import time
 from typing import Any
 from pathlib import Path
-from src.captcha_ import captcha_control
+from streamlit.components.v1 import html
 
 import streamlit as st
 import pandas as pd
+
+try:
+    from tkinter import Tk, filedialog
+
+    TK_AVAILABLE = True
+except ImportError:
+    TK_AVAILABLE = False
+
+from src.captcha_ import captcha_control
+
+# Detect system platform
+OS_PLATFORM = sys.platform
+
 
 # set these variables according to your project
 APP_NAME = "NuXL"
@@ -78,6 +91,7 @@ def save_params(params: dict[str, Any]) -> None:
         json.dump(params, outfile, indent=4)
 
 
+
 def page_setup(page: str = "") -> dict[str, Any]:
     """
     Set up the Streamlit page configuration and determine the workspace for the current session.
@@ -90,56 +104,149 @@ def page_setup(page: str = "") -> dict[str, Any]:
     Returns:
         dict[str, Any]: A dictionary containing the parameters loaded from the parameter file.
     """
+    if "settings" not in st.session_state:
+        with open("settings.json", "r") as f:
+            st.session_state.settings = json.load(f)
+
     # Set Streamlit page configurations
     st.set_page_config(
         page_title=APP_NAME,
-        page_icon="assets/icon.png",
+        page_icon="assets/OpenMS.png",
         layout="wide",
         initial_sidebar_state="auto",
         menu_items=None,
     )
 
+    # Expand sidebar navigation
+    st.markdown(
+        """
+        <style>
+            .stMultiSelect [data-baseweb=select] span{
+                max-width: 500px;
+                font-size: 1rem;
+            }
+            div[data-testid='stSidebarNav'] ul {max-height:none}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    #st.logo("assets/pyopenms_transparent_background.png")
+
+    # Create google analytics if consent was given
+    if (
+        ("tracking_consent" not in st.session_state) 
+        or (st.session_state.tracking_consent is None)
+        or (not st.session_state.settings['online_deployment'])
+    ):
+        st.session_state.tracking_consent = None
+    else:
+        if (st.session_state.settings["analytics"]["google-analytics"]["enabled"]) and (
+            st.session_state.tracking_consent["google-analytics"] == True
+        ):
+            html(
+                """
+                <!DOCTYPE html>
+                <html lang="en">
+                    <head></head>
+                    <body><script>
+                    window.parent.gtag('consent', 'update', {
+                    'analytics_storage': 'granted'
+                    });
+                    </script></body>
+                </html>
+                """,
+                width=1,
+                height=1,
+            )
+        if (st.session_state.settings["analytics"]["piwik-pro"]["enabled"]) and (
+            st.session_state.tracking_consent["piwik-pro"] == True
+        ):
+            html(
+                """
+                <!DOCTYPE html>
+                <html lang="en">
+                    <head></head>
+                    <body><script>
+                    var consentSettings = {
+                        analytics: { status: 1 } // Set Analytics consent to 'on' (1 for on, 0 for off)
+                    };
+                    window.parent.ppms.cm.api('setComplianceSettings', { consents: consentSettings }, function() {
+                        console.log("PiwikPro Analytics consent set to on.");
+                    }, function(error) {
+                        console.error("Failed to set PiwikPro analytics consent:", error);
+                    });
+                    </script></body>
+                </html>
+                """,
+                width=1,
+                height=1,
+            )
+
     # Determine the workspace for the current session
-    if "workspace" not in st.session_state:
+    if ("workspace" not in st.session_state) or (
+        ("workspace" in st.query_params)
+        and (st.query_params.workspace != st.session_state.workspace.name)
+    ):
         # Clear any previous caches
         st.cache_data.clear()
         st.cache_resource.clear()
         # Check location
-        if "local" in sys.argv:
+        if not st.session_state.settings["online_deployment"]:
             st.session_state.location = "local"
-            st.session_state.controlo = True
+            st.session_state["previous_dir"] = os.getcwd()
+            st.session_state["local_dir"] = ""
         else:
             st.session_state.location = "online"
-            st.session_state.controlo = False
-        # if we run the packaged windows version, we start within the Python directory -> need to change working directory to ..\umetaflow-gui-main
+        # if we run the packaged windows version, we start within the Python directory -> need to change working directory to ..\streamlit-template
         if "windows" in sys.argv:
             os.chdir("../nuxl-app-main")
         # Define the directory where all workspaces will be stored
-        workspaces_dir = Path("..", "workspaces-"+REPOSITORY_NAME)
-        if st.session_state.location == "online":
-            st.session_state.workspace = Path(workspaces_dir, str(uuid.uuid1()))
+        workspaces_dir = Path("..", "workspaces-" + REPOSITORY_NAME)
+        if "workspace" in st.query_params:
+            st.session_state.workspace = Path(workspaces_dir, st.query_params.workspace)
+        elif st.session_state.location == "online":
+            workspace_id = str(uuid.uuid1())
+            st.session_state.workspace = Path(workspaces_dir, workspace_id)
+            st.query_params.workspace = workspace_id
         else:
             st.session_state.workspace = Path(workspaces_dir, "default")
+            st.query_params.workspace = "default"
 
-    # If run in hosted mode, show captcha as long as it has not been solved
-    if not st.session_state["controlo"]:
-        # Apply captcha by calling the captcha_control function
-        captcha_control()
+        if st.session_state.location != "online":
+            # not any captcha so, controllo should be true
+            st.session_state["controllo"] = True
+
+    if "workspace" not in st.query_params:
+        st.query_params.workspace = st.session_state.workspace.name
 
     # Make sure the necessary directories exist
     st.session_state.workspace.mkdir(parents=True, exist_ok=True)
-    Path(st.session_state.workspace,
+    Path(st.session_state.workspace, 
          "mzML-files").mkdir(parents=True, exist_ok=True)
-    
+
     Path(st.session_state.workspace,
          "fasta-files").mkdir(parents=True, exist_ok=True)
     
     Path(st.session_state.workspace,
          "result-files").mkdir(parents=True, exist_ok=True)
-
+    
     # Render the sidebar
     params = render_sidebar(page)
+
+    # If run in hosted mode, show captcha as long as it has not been solved
+    #if not "local" in sys.argv:
+    #    if "controllo" not in st.session_state:
+    #        # Apply captcha by calling the captcha_control function
+    #        captcha_control()
+    
+    # If run in hosted mode, show captcha as long as it has not been solved
+    if 'controllo' not in st.session_state or params["controllo"] == False:
+        # Apply captcha by calling the captcha_control function
+        captcha_control()  
+
     return params
+
 
 def render_sidebar(page: str = "") -> None:
     """
@@ -267,6 +374,57 @@ def v_space(n: int, col=None) -> None:
             col.write("#")
         else:
             st.write("#")
+
+
+def display_large_dataframe(
+    df, chunk_sizes: list[int] = [10, 100, 1_000, 10_000], **kwargs
+):
+    """
+    Displays a large DataFrame in chunks with pagination controls and row selection.
+
+    Args:
+        df: The DataFrame to display.
+        chunk_sizes: A list of chunk sizes to choose from.
+        ...: Additional keyword arguments to pass to the `st.dataframe` function. See: https://docs.streamlit.io/develop/api-reference/data/st.dataframe
+
+    Returns:
+        Index of selected row.
+    """
+
+    # Dropdown for selecting chunk size
+    chunk_size = st.selectbox("Select Number of Rows to Display", chunk_sizes)
+
+    # Calculate total number of chunks
+    total_chunks = (len(df) + chunk_size - 1) // chunk_size
+
+    if total_chunks > 1:
+        page = int(st.number_input("Select Page", 1, total_chunks, 1, step=1))
+    else:
+        page = 1
+
+    # Function to get the current chunk of the DataFrame
+    def get_current_chunk(df, chunk_size, chunk_index):
+        start = chunk_index * chunk_size
+        end = min(
+            start + chunk_size, len(df)
+        )  # Ensure end does not exceed dataframe length
+        return df.iloc[start:end], start, end
+
+    # Display the current chunk
+    current_chunk_df, start_row, end_row = get_current_chunk(df, chunk_size, page - 1)
+
+    event = st.dataframe(current_chunk_df, **kwargs)
+
+    st.write(
+        f"Showing rows {start_row + 1} to {end_row} of {len(df)} ({get_dataframe_mem_useage(current_chunk_df):.2f} MB)"
+    )
+
+    rows = event["selection"]["rows"]
+    if not rows:
+        return None
+    # Calculate the index based on the current page and chunk size
+    base_index = (page - 1) * chunk_size
+    return base_index + rows[0]
 
 
 def show_table(df: pd.DataFrame, download_name: str = "") -> None:
@@ -398,7 +556,6 @@ def reset_directory(path: Path) -> None:
     if path.exists():
         shutil.rmtree(path)
     path.mkdir(parents=True, exist_ok=True)
-
 
 # General warning/error messages
 WARNINGS = {
