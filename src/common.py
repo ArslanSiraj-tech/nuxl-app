@@ -354,8 +354,13 @@ You can share this unique workspace ID with other people.
 
         if page != "main":
             st.info(
-                f"**{Path(st.session_state['workspace']).stem}**")
+                    f"""💡 Your workspace ID
+
+**{st.session_state['workspace'].name}**
+"""
+                )
         st.image("assets/OpenMS.png", "powered by")
+        #st.logo()
     return params
 
 def v_space(n: int, col=None) -> None:
