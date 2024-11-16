@@ -42,7 +42,7 @@ RUN mamba --version
 
 # Setup mamba environment.
 COPY environment.yml ./environment.yml
-RUN mamba env create -f environment.yml 
+RUN mamba env create -f environment.yml
 
 RUN echo "mamba activate streamlit-env" >> ~/.bashrc
 SHELL ["/bin/bash", "--rcfile", "~/.bashrc"]
@@ -153,6 +153,9 @@ COPY example-data/ /app/example-data
 COPY pages/ /app/pages
 COPY .streamlit/config.toml /app/.streamlit/config.toml
 COPY clean-up-workspaces.py /app/clean-up-workspaces.py
+COPY settings.json /app/settings.json
+COPY hooks/ /app/hooks
+COPY gdpr_consent/ /app/gdpr_consent
 
 # add cron job to the crontab
 RUN echo "0 3 * * * /root/mambaforge/envs/streamlit-env/bin/python /app/clean-up-workspaces.py >> /app/clean-up-workspaces.log 2>&1" | crontab -
@@ -163,6 +166,12 @@ RUN echo "service cron start" >> /app/entrypoint.sh
 RUN echo "mamba run --no-capture-output -n streamlit-env streamlit run app.py" >> /app/entrypoint.sh
 # make the script executable
 RUN chmod +x /app/entrypoint.sh
+
+# Patch Analytics
+RUN mamba run -n streamlit-env python hooks/hook-analytics.py
+
+# Set Online Deployment
+RUN jq '.online_deployment = true' settings.json > tmp.json && mv tmp.json settings.json
 
 # Download latest OpenMS App executable for Windows from Github actions workflow.
 RUN WORKFLOW_ID=$(curl -s "https://api.github.com/repos/$GITHUB_USER/$GITHUB_REPO/actions/workflows" | jq -r '.workflows[] | select(.name == "Build executable for Windows") | .id') \
