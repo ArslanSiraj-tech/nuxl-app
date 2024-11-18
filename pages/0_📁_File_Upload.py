@@ -39,7 +39,7 @@ with tabs[0]:
     with st.form("mzML-upload", clear_on_submit=True):
         #create file uploader to take mzML files
         files = st.file_uploader(
-            "mzML files", accept_multiple_files=(st.session_state.location == "local"), type=['.mzML'], help="Input file (Valid formats: 'mzML')")
+            "mzML/raw files", accept_multiple_files=(st.session_state.location == "local"), type=['.mzML', '.raw'], help="Input file (Valid formats: 'mzML' or 'raw')")
         cols = st.columns(3)
         #file uploader submit button
         if cols[1].form_submit_button("Add files to workspace", type="primary"):

@@ -41,7 +41,7 @@ def save_uploaded_mzML(uploaded_files: list[bytes]) -> None:
     # Write files from buffer to workspace mzML directory, add to selected files
     mzML_dir: Path = Path(st.session_state.workspace, "mzML-files")
     for f in uploaded_files:
-        if f.name not in [f.name for f in mzML_dir.iterdir()] and f.name.endswith("mzML"):
+        if f.name not in [f.name for f in mzML_dir.iterdir()] and (f.name.endswith("mzML") or f.name.endswith("raw")):
             with open(Path(mzML_dir, f.name), "wb") as fh:
                 fh.write(f.getbuffer())
         add_to_selected_mzML(Path(f.name).stem)
@@ -274,3 +274,30 @@ def remove_all_fasta_files() -> None:
     # reset selected fasta list
     st.session_state["selected-fasta-files"] = []
     st.success("All fasta files removed!")
+
+import os
+def rename_files(directory: str) -> None:
+    """
+    Renames files in the given directory by removing '.raw' from files ending with '.raw.mzML'.
+
+    Args:
+        directory (str): The path to the directory containing the files to be renamed.
+
+    Returns:
+        None
+    """
+    # Iterate over all files in the given directory
+    for filename in os.listdir(directory):
+        # Check if the file ends with .raw.mzML
+        if filename.endswith('.raw.mzML'):
+            # Construct the new file name by replacing .raw.mzML with .mzML
+            new_filename = filename.replace('.raw.mzML', '.mzML')
+            # Construct full file paths
+            old_file = os.path.join(directory, filename)
+            new_file = os.path.join(directory, new_filename)
+            # Rename the file
+            os.rename(old_file, new_file)
+            # Print the renaming action
+            print(f'Renamed: {old_file} -> {new_file}')
+
+    return None
