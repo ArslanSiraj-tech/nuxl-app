@@ -2,7 +2,6 @@ workspaces-openms-streamlit-template
 build.log
 workspaces-streamlit-template
 build
-dist
 myenv
 hooks/__pycache__/
 run_app.spec
