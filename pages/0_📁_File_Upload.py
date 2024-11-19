@@ -39,10 +39,10 @@ with tabs[0]:
     with st.form("mzML-upload", clear_on_submit=True):
         #create file uploader to take mzML files
         files = st.file_uploader(
-            "mzML/raw files", accept_multiple_files=(st.session_state.location == "local"), type=['.mzML', '.raw'], help="Input file (Valid formats: 'mzML' or 'raw')")
+            "Upload mzML/raw files", accept_multiple_files=(st.session_state.location == "local"), type=['.mzML', '.raw'], help="Input file (Valid formats: 'mzML' or 'raw')")
         cols = st.columns(3)
         #file uploader submit button
-        if cols[1].form_submit_button("Add files to workspace", type="primary"):
+        if cols[1].form_submit_button("Add mzML/raw file to workspace", type="primary"):
             if not files:
                 st.warning("Upload some files first.")
             else:
@@ -57,12 +57,12 @@ with tabs[0]:
         file_names_ = [f.name for f in Path(mzML_dir).iterdir()]
         df = pd.DataFrame(
             {"file name": [item for item in file_names_  if not item.endswith(".csv")]})
-        st.markdown("##### mzML files in current workspace:")
+        st.markdown("##### mzML/raw files in current workspace:")
         show_table(df)
         v_space(1)
         # Remove files
-        with st.expander("🗑️ Remove uploaded mzML files"):
-            to_remove = st.multiselect("select mzML files",
+        with st.expander("🗑️ Remove uploaded mzML/raw files"):
+            to_remove = st.multiselect("select mzML/raw files",
                                     options=[f.name for f in sorted(mzML_dir.iterdir())])
             
             #st.code(to_remove)
@@ -83,7 +83,7 @@ with tabs[1]:
     with st.form("fasta-upload", clear_on_submit=True):
         #create file uploader to take fasta files
         files = st.file_uploader(
-            "fasta file", accept_multiple_files=(st.session_state.location == "local"), type=['.fasta'], help="Input file (Valid formats: 'fasta')")
+            "Upload fasta file", accept_multiple_files=(st.session_state.location == "local"), type=['.fasta'], help="Input file (Valid formats: 'fasta')")
         cols = st.columns(3)
         #file uploader submit button
         if cols[1].form_submit_button("Add fasta to workspace", type="primary"):
