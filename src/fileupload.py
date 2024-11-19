@@ -297,7 +297,5 @@ def rename_files(directory: str) -> None:
             new_file = os.path.join(directory, new_filename)
             # Rename the file
             os.rename(old_file, new_file)
-            # Print the renaming action
-            print(f'Renamed: {old_file} -> {new_file}')
 
     return None

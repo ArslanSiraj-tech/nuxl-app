@@ -223,6 +223,7 @@ if cols[0].form_submit_button("Run-analysis", type="primary"):
     if st.button("Terminate/Clear", key="terminate-button", type="secondary"):
         #terminate subprocess
         terminate_subprocess()
+
         st.warning("Process terminated. The analysis may not be complete.")
         #clear form
         st.rerun() 
@@ -247,15 +248,32 @@ if cols[0].form_submit_button("Run-analysis", type="primary"):
 
         # If session state is online/docker
         else:  
+
+            if mzML_file_path.endswith(".raw.mzML"):
+                new_file_path = mzML_file_path.replace(".raw.mzML", ".mzML")
+                os.rename(mzML_file_path, new_file_path)
+
+                st.info("Selected file rename .raw.mzML--> .mzML", icon="ℹ️")
+
+                # In docker it executable on path
+                args = ["OpenNuXL", "-in", new_file_path, "-database", database_file_path, "-out", result_path, "-NuXL:presets", preset, 
+                            "-NuXL:length", length, "-NuXL:scoring", scoring, "-precursor:mass_tolerance",  Precursor_MT, "-precursor:mass_tolerance_unit",  Precursor_MT_unit,
+                            "-fragment:mass_tolerance",  Fragment_MT, "-fragment:mass_tolerance_unit",  Fragment_MT_unit,
+                            "-peptide:min_size", peptide_min, "-peptide:max_size",peptide_max, "-peptide:missed_cleavages",Missed_cleavages, "-peptide:enzyme", Enzyme,
+                            "-modifications:variable_max_per_peptide", Variable_max_per_peptide
+                            ]
             
-            thermo_exec_path = "/thirdparty/ThermoRawFileParser/ThermoRawFileParser.exe"
-            # In docker it executable on path
-            args = ["OpenNuXL", "-ThermoRaw_executable", thermo_exec_path, "-in", mzML_file_path, "-database", database_file_path, "-out", result_path, "-NuXL:presets", preset, 
-                        "-NuXL:length", length, "-NuXL:scoring", scoring, "-precursor:mass_tolerance",  Precursor_MT, "-precursor:mass_tolerance_unit",  Precursor_MT_unit,
-                        "-fragment:mass_tolerance",  Fragment_MT, "-fragment:mass_tolerance_unit",  Fragment_MT_unit,
-                        "-peptide:min_size", peptide_min, "-peptide:max_size",peptide_max, "-peptide:missed_cleavages",Missed_cleavages, "-peptide:enzyme", Enzyme,
-                        "-modifications:variable_max_per_peptide", Variable_max_per_peptide
-                        ]
+            else:
+
+                    thermo_exec_path = "/thirdparty/ThermoRawFileParser/ThermoRawFileParser.exe"
+                    # In docker it executable on path
+                    args = ["OpenNuXL", "-ThermoRaw_executable", thermo_exec_path, "-in", mzML_file_path, "-database", database_file_path, "-out", result_path, "-NuXL:presets", preset, 
+                                "-NuXL:length", length, "-NuXL:scoring", scoring, "-precursor:mass_tolerance",  Precursor_MT, "-precursor:mass_tolerance_unit",  Precursor_MT_unit,
+                                "-fragment:mass_tolerance",  Fragment_MT, "-fragment:mass_tolerance_unit",  Fragment_MT_unit,
+                                "-peptide:min_size", peptide_min, "-peptide:max_size",peptide_max, "-peptide:missed_cleavages",Missed_cleavages, "-peptide:enzyme", Enzyme,
+                                "-modifications:variable_max_per_peptide", Variable_max_per_peptide
+                                ]
+
         
         # If variable modification provided
         if variable_modification: 
