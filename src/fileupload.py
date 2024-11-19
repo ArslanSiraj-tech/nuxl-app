@@ -106,8 +106,9 @@ def remove_selected_mzML_files(to_remove: list[str]) -> None:
 
     # remove all given files from mzML workspace directory and selected files
     for f in to_remove:
-        Path(mzML_dir, f+".mzML").unlink()
-        st.session_state["selected-mzML-files"].remove(f)
+        Path(mzML_dir, f).unlink()
+        #st.code(st.session_state["selected-mzML-files"])
+        #st.session_state["selected-mzML-files"].remove(f)
     st.success("Selected mzML files removed!")
 
 
@@ -297,7 +298,5 @@ def rename_files(directory: str) -> None:
             new_file = os.path.join(directory, new_filename)
             # Rename the file
             os.rename(old_file, new_file)
-            # Print the renaming action
-            print(f'Renamed: {old_file} -> {new_file}')
 
     return None
