@@ -63,7 +63,10 @@ with tabs[0]:
         # Remove files
         with st.expander("🗑️ Remove uploaded mzML files"):
             to_remove = st.multiselect("select mzML files",
-                                    options=[f.stem for f in sorted(mzML_dir.iterdir())])
+                                    options=[f.name for f in sorted(mzML_dir.iterdir())])
+            
+            #st.code(to_remove)
+            
             c1, c2 = st.columns(2)
             #Remove selected files
             if c2.button("Remove **selected**", type="primary", disabled=not any(to_remove)):

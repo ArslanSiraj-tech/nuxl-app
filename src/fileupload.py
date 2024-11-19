@@ -106,8 +106,9 @@ def remove_selected_mzML_files(to_remove: list[str]) -> None:
 
     # remove all given files from mzML workspace directory and selected files
     for f in to_remove:
-        Path(mzML_dir, f+".mzML").unlink()
-        st.session_state["selected-mzML-files"].remove(f)
+        Path(mzML_dir, f).unlink()
+        #st.code(st.session_state["selected-mzML-files"])
+        #st.session_state["selected-mzML-files"].remove(f)
     st.success("Selected mzML files removed!")
 
 
