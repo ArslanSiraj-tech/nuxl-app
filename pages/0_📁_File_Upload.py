@@ -30,16 +30,16 @@ mzML_dir: Path = Path(st.session_state.workspace, "mzML-files")
 fasta_dir: Path = Path(st.session_state.workspace, "fasta-files")
 
 #tabs on page
-tabs = ["mzML files", "Fasta files"]
+tabs = ["mzML/raw files", "Fasta files"]
 tabs = st.tabs(tabs)
 
-#mzML files tab
+#mzML/raw files tab
 with tabs[0]:
     #create form of mzML-upload
     with st.form("mzML-upload", clear_on_submit=True):
         #create file uploader to take mzML files
         files = st.file_uploader(
-            "mzML files", accept_multiple_files=(st.session_state.location == "local"), type=['.mzML'], help="Input file (Valid formats: 'mzML')")
+            "mzML/raw files", accept_multiple_files=(st.session_state.location == "local"), type=['.mzML', '.raw'], help="Input file (Valid formats: 'mzML' or 'raw')")
         cols = st.columns(3)
         #file uploader submit button
         if cols[1].form_submit_button("Add files to workspace", type="primary"):
@@ -68,11 +68,11 @@ with tabs[0]:
             #Remove selected files
             if c2.button("Remove **selected**", type="primary", disabled=not any(to_remove)):
                 remove_selected_mzML_files(to_remove)
-                st.experimental_rerun()
+                st.rerun()
             #Remove all files
             if c1.button("⚠️ Remove **all**", disabled=not any(mzML_dir.iterdir())):
                 remove_all_mzML_files()
-                st.experimental_rerun()
+                st.rerun()
 
 #fasta files tab
 with tabs[1]:
@@ -108,10 +108,10 @@ with tabs[1]:
             #Remove selected files
             if c2.button("Remove **selected** from workspace", type="primary", disabled=not any(to_remove)):
                 remove_selected_fasta_files(to_remove)
-                st.experimental_rerun()
+                st.rerun()
             #Remove all files
             if c1.button("⚠️ Remove **all** from workspace", disabled=not any(fasta_dir.iterdir())):
                 remove_all_fasta_files()
-                st.experimental_rerun()
+                st.rerun()
 
 save_params(params)

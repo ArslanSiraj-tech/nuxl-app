@@ -84,7 +84,7 @@ with st.form("fasta-upload", clear_on_submit=False):
 
     # selected mzML file from mzML files list
     selected_mzML_file = st.selectbox(
-        "choose mzML file",
+        "choose mzML/raw file",
         [item for item in mzML_files_ if not item.endswith(".csv")]
         ,
         help="If file not here, please upload at File Upload"
@@ -225,7 +225,7 @@ if cols[0].form_submit_button("Run-analysis", type="primary"):
         terminate_subprocess()
         st.warning("Process terminated. The analysis may not be complete.")
         #clear form
-        st.experimental_rerun() 
+        st.rerun() 
 
     # with st.spinner("Running analysis... Please wait until analysis done 😑"): #without status/ just spinner button
     with st.status("Running analysis... Please wait until analysis done 😑"):
@@ -246,10 +246,11 @@ if cols[0].form_submit_button("Run-analysis", type="primary"):
             args.extend(["-percolator_executable", perc_exec])
 
         # If session state is online/docker
-        else:     
-
+        else:  
+            
+            thermo_exec_path = "/thirdparty/ThermoRawFileParser/ThermoRawFileParser.exe"
             # In docker it executable on path
-            args = ["OpenNuXL", "-in", mzML_file_path, "-database", database_file_path, "-out", result_path, "-NuXL:presets", preset, 
+            args = ["OpenNuXL", "-ThermoRaw_executable", thermo_exec_path, "-in", mzML_file_path, "-database", database_file_path, "-out", result_path, "-NuXL:presets", preset, 
                         "-NuXL:length", length, "-NuXL:scoring", scoring, "-precursor:mass_tolerance",  Precursor_MT, "-precursor:mass_tolerance_unit",  Precursor_MT_unit,
                         "-fragment:mass_tolerance",  Fragment_MT, "-fragment:mass_tolerance_unit",  Fragment_MT_unit,
                         "-peptide:min_size", peptide_min, "-peptide:max_size",peptide_max, "-peptide:missed_cleavages",Missed_cleavages, "-peptide:enzyme", Enzyme,
@@ -270,11 +271,14 @@ if cols[0].form_submit_button("Run-analysis", type="primary"):
         variables = []  
 
         # want to see the command values and argues
-        # message = f"Running '{' '.join(args)}'"
-        # st.code(message)
+        #message = f"Running '{' '.join(args)}'"
+        #st.code(message)
 
         # run subprocess command
         run_subprocess(args, variables, result_dict)
+
+        #rename the file .raw.mzML --> .mzML
+        rename_files(Path(st.session_state.workspace, "mzML-files"))
         
 
         # Use st.experimental_thread to run the subprocess asynchronously
