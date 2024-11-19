@@ -30,10 +30,10 @@ mzML_dir: Path = Path(st.session_state.workspace, "mzML-files")
 fasta_dir: Path = Path(st.session_state.workspace, "fasta-files")
 
 #tabs on page
-tabs = ["mzML files", "Fasta files"]
+tabs = ["mzML/raw files", "Fasta files"]
 tabs = st.tabs(tabs)
 
-#mzML files tab
+#mzML/raw files tab
 with tabs[0]:
     #create form of mzML-upload
     with st.form("mzML-upload", clear_on_submit=True):

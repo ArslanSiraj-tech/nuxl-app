@@ -401,12 +401,12 @@ with tabs[1]:
             ### remove selected files from workspace
             if c2.button("Remove **selected**", type="primary", disabled=not any(to_remove)):
                 remove_selected_result_files(to_remove)
-                st.experimental_rerun() 
+                st.rerun() 
 
             ### remove all files from workspace
             if c1.button("⚠️ Remove **all**", disabled=not any(result_dir.iterdir())):
                 remove_all_result_files() 
-                st.experimental_rerun() 
+                st.rerun() 
 
 
         with st.expander("⬇️ Download result files"):
@@ -418,7 +418,7 @@ with tabs[1]:
             if c2.button("Download **selected**", type="primary", disabled=not any(to_download)):
                 #download selected files will display download hyperlink
                 download_selected_result_files(to_download, "selected_result_files")
-                #st.experimental_rerun()
+                #st.rerun()
 
             ### afraid if there are many files in workspace? should we removed this option?
             if c1.button("⚠️ Download **all**", disabled=not any(result_dir.iterdir())):
@@ -440,7 +440,7 @@ with tabs[2]:
                 st.warning("Upload some files first.")
             else:
                 save_uploaded_result(files)
-            st.experimental_rerun()
+            st.rerun()
 
 # At the end of each page, always save parameters (including any changes via widgets with key)
 save_params(params)

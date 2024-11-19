@@ -139,7 +139,6 @@ RUN make -j4 pyopenms
 WORKDIR /openms-build_py/pyOpenMS
 RUN pip install dist/*.whl
 
-
 # Prepare and run streamlit app.
 FROM compile-openms AS run-app
 # Create workdir and copy over all streamlit related files/folders.
