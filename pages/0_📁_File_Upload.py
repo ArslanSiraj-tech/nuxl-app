@@ -68,11 +68,11 @@ with tabs[0]:
             #Remove selected files
             if c2.button("Remove **selected**", type="primary", disabled=not any(to_remove)):
                 remove_selected_mzML_files(to_remove)
-                st.experimental_rerun()
+                st.rerun()
             #Remove all files
             if c1.button("⚠️ Remove **all**", disabled=not any(mzML_dir.iterdir())):
                 remove_all_mzML_files()
-                st.experimental_rerun()
+                st.rerun()
 
 #fasta files tab
 with tabs[1]:
@@ -108,10 +108,10 @@ with tabs[1]:
             #Remove selected files
             if c2.button("Remove **selected** from workspace", type="primary", disabled=not any(to_remove)):
                 remove_selected_fasta_files(to_remove)
-                st.experimental_rerun()
+                st.rerun()
             #Remove all files
             if c1.button("⚠️ Remove **all** from workspace", disabled=not any(fasta_dir.iterdir())):
                 remove_all_fasta_files()
-                st.experimental_rerun()
+                st.rerun()
 
 save_params(params)

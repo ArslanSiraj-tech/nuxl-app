@@ -225,7 +225,7 @@ if cols[0].form_submit_button("Run-analysis", type="primary"):
         terminate_subprocess()
         st.warning("Process terminated. The analysis may not be complete.")
         #clear form
-        st.experimental_rerun() 
+        st.rerun() 
 
     # with st.spinner("Running analysis... Please wait until analysis done 😑"): #without status/ just spinner button
     with st.status("Running analysis... Please wait until analysis done 😑"):
