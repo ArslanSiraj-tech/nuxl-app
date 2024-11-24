@@ -177,6 +177,10 @@ jobs:
         name: openms-package
         path: openms-package
 
+    - name: List files in openms-package
+      run: |
+        ls -R openms-package
+
     - name: Extract bin and share from package
       run: |
         cd openms-package
