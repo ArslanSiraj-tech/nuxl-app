@@ -158,7 +158,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: openms-package
-        path: ${{ github.workspace }}/OpenMS/bld/
+        path: ${{ github.workspace }}/OpenMS/bld/*
 
   build-executable:
     runs-on: windows-latest
@@ -180,7 +180,6 @@ jobs:
     - name: Extract bin and share from package
       run: |
         cd openms-package
-        unzip "*.zip" -d .
         cp -r openms-package/bin ../openms-bin
         cp -r openms-package/share ../share
 
