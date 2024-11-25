@@ -183,9 +183,12 @@ jobs:
 
     - name: Extract bin and share from package
       run: |
+        mkdir openms-bin
         cd openms-package
-        cp -r openms-package/bin ../openms-bin
-        cp -r openms-package/share ../share
+        cp -r bin openms-bin
+        #cp -r share ../share
+        #cp -r openms-package/bin ../openms-bin
+        #cp -r openms-package/share ../share
 
     - name: Setup python embeddable version
       run: |
