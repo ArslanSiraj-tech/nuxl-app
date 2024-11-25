@@ -189,7 +189,7 @@ jobs:
         #cp -r share ../share
         #cp -r openms-package/bin ../openms-bin
         #cp -r openms-package/share ../share
-
+    
     - name: Setup python embeddable version
       run: |
         mkdir python-${{ env.PYTHON_VERSION }}
@@ -220,7 +220,11 @@ jobs:
         $content = Get-Content -Raw settings.json | ConvertFrom-Json
         $content.online_deployment = $false
         $content | ConvertTo-Json -Depth 100 | Set-Content settings.json
-
+        
+    - name: List files in openms-package
+      run: |
+        ls -R openms-bin
+        
     - name: Create All-in-one executable folder
       run: |
 
