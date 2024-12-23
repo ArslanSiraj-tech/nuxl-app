@@ -298,6 +298,10 @@ jobs:
     
     - name: CopytoSrcDir
       run: |
+        if (Test-Path -Path "SourceDir") {
+            Remove-Item -Recurse -Force "SourceDir"
+        }
+        
         mkdir SourceDir
         cp -r streamlit_exe/* SourceDir
         mv run_app.bat SourceDir
