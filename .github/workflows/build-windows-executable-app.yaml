@@ -187,7 +187,8 @@ jobs:
       run: |
         mkdir openms-bin
         cd openms-package
-        cp -r bin openms-bin
+        cp -r OpenMS/bld/bin openms-bin
+        cp -r _thirdparty openms-thirdparty
         #cp -r share ../share
         #cp -r openms-package/bin ../openms-bin
         #cp -r openms-package/share ../share
