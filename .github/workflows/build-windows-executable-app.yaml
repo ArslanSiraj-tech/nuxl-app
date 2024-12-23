@@ -305,12 +305,12 @@ jobs:
         
     - name: Prepare SourceDir
       run: |
-          mkdir SourceDir
-          mv streamlit_exe/* SourceDir
-          cp ShowSuccessMessage.vbs SourceDir
-          cp assets/openms_license.rtf SourceDir
-          # Logo of app
-          cp assets/openms.ico SourceDir
+        mkdir SourceDir
+        mv streamlit_exe/* SourceDir
+        cp ShowSuccessMessage.vbs SourceDir
+        cp assets/openms_license.rtf SourceDir
+        # Logo of app
+        cp assets/openms.ico SourceDir
 
     - name: Generate WiX XML file
       shell: bash
