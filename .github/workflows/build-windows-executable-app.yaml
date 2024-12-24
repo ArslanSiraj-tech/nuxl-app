@@ -186,14 +186,23 @@ jobs:
 
     - name: Extract bin and share from package
       run: |
-        mkdir openms-bin
-        mkdir openms-thirdparty
-        cd openms-package
-        cp -r OpenMS/bld/bin openms-bin
-        cp -r _thirdparty openms-thirdparty
+        mkdir -p openms-bin
+        cp -r OpenMS/bld/bin/* openms-bin/ || echo "No files to copy from OpenMS/bld/bin"
+
+        mkdir -p openms-thirdparty
+        cp -r _thirdparty/* openms-thirdparty/ || echo "No files to copy from _thirdparty"
+        
         #cp -r share ../share
         #cp -r openms-package/bin ../openms-bin
         #cp -r openms-package/share ../share
+
+    - name: List files in openms-bin
+      run: |
+        ls -R openms-bin
+
+    - name: List files in openms-thirdparty
+      run: |
+        ls -R openms-thirdparty
     
     - name: Setup python embeddable version
       run: |
@@ -225,10 +234,6 @@ jobs:
         $content = Get-Content -Raw settings.json | ConvertFrom-Json
         $content.online_deployment = $false
         $content | ConvertTo-Json -Depth 100 | Set-Content settings.json
-        
-    - name: List files in openms-package
-      run: |
-        ls -R openms-bin
         
     - name: Create All-in-one executable folder
       run: |
