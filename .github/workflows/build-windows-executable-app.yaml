@@ -295,20 +295,13 @@ jobs:
         cat <<EOF > ShowSuccessMessage.vbs
         MsgBox "The ${{ env.APP_NAME }} application is successfully installed.", vbInformation, "Installation Complete"
         EOF
-    
-    - name: CopytoSrcDir
-      run: |
-        if (Test-Path -Path "SourceDir") {
-            Remove-Item -Recurse -Force "SourceDir"
-        }
-        
-        mkdir SourceDir
-        cp -r streamlit_exe/* SourceDir
-        mv run_app.bat SourceDir
-        cp dummy_license.rtf SourceDir
         
     - name: Prepare SourceDir
       run: |
+        #if (Test-Path -Path "SourceDir") {
+        #    Remove-Item -Recurse -Force "SourceDir"
+        #}
+        
         mkdir SourceDir
         mv streamlit_exe/* SourceDir
         cp ShowSuccessMessage.vbs SourceDir
