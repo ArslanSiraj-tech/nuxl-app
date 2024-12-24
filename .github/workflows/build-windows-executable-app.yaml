@@ -261,7 +261,7 @@ jobs:
         echo "Scanning for problematic filenames in streamlit_exe..."
         
         # Define invalid characters regex: Allows alphanumerics, underscores, hyphens, dots
-        invalid_files=$(find streamlit_exe -type f | grep -P '[^a-zA-Z0-9_.-]')
+        invalid_files=$(find streamlit_exe -type f | grep '[^a-zA-Z0-9_.-]')
         
         # Check if any invalid files are found
         if [ ! -z "$invalid_files" ]; then
@@ -271,7 +271,7 @@ jobs:
         else
           echo "No problematic filenames detected."
         fi
-        
+
     - name: Generate Readme.txt
       shell: bash
       run: |
