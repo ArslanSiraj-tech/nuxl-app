@@ -303,7 +303,7 @@ jobs:
         #}
         
         mkdir SourceDir
-        mv streamlit_exe/* SourceDir
+        cp streamlit_exe/* SourceDir
         cp ShowSuccessMessage.vbs SourceDir
         cp assets/openms_license.rtf SourceDir
         # Logo of app
@@ -404,5 +404,5 @@ jobs:
       with:
         name: OpenMS-NuXLApp
         path: |
-          streamlit_exe/*
+          streamlit_exe/**
           
