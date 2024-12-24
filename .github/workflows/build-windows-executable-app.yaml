@@ -404,6 +404,5 @@ jobs:
       with:
         name: OpenMS-NuXLApp
         path: |
-          # ${{ env.APP_NAME }}.msi
-          streamlit_exe
+          streamlit_exe/*
           
