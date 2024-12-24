@@ -224,10 +224,9 @@ jobs:
     - name: Install Required Packages
       run: .\python-${{ env.PYTHON_VERSION }}\python -m pip install --force-reinstall -r requirements.txt --no-warn-script-location
 
-    - name: Create run_app.bat file
+    - name: Create .bat file
       run: |
-        echo '@echo off' > run_app.bat
-        echo '.\\python-${{ env.PYTHON_VERSION }}\\python -m streamlit run app.py local' >> run_app.bat
+          echo " start /min .\python-${{ env.PYTHON_VERSION }}\python -m streamlit run app.py local" > ${{ env.APP_NAME }}.bat
     
     - name: Set to offline deployment
       run: |
@@ -245,7 +244,7 @@ jobs:
         mkdir streamlit_exe
 
         mv python-${{ env.PYTHON_VERSION }} streamlit_exe
-        cp run_app.bat streamlit_exe
+        #cp run_app.bat streamlit_exe
         cp -r src streamlit_exe
         cp -r pages streamlit_exe
         cp -r assets streamlit_exe
@@ -305,10 +304,6 @@ jobs:
         
     - name: Prepare SourceDir
       run: |
-        #if (Test-Path -Path "SourceDir") {
-        #    Remove-Item -Recurse -Force "SourceDir"
-        #}
-        
         mkdir SourceDir
         cp streamlit_exe/* SourceDir
         cp ShowSuccessMessage.vbs SourceDir
