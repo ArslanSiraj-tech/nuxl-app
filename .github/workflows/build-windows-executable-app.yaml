@@ -239,7 +239,7 @@ jobs:
         mkdir streamlit_exe
 
         mv python-${{ env.PYTHON_VERSION }} streamlit_exe
-        #mv run_app.bat streamlit_exe
+        cp run_app.bat streamlit_exe
         cp -r src streamlit_exe
         cp -r pages streamlit_exe
         cp -r assets streamlit_exe
@@ -254,23 +254,6 @@ jobs:
         #foreach ($file in $files) {
         #  Copy-Item "openms-bin/${file}.exe" -Destination "streamlit_exe/${file}.exe"
         #}
-
-    - name: Identify problematic filenames
-      shell: bash
-      run: |
-        echo "Scanning for problematic filenames in streamlit_exe..."
-        
-        # Define invalid characters regex: Allows alphanumerics, underscores, hyphens, dots
-        invalid_files=$(find streamlit_exe -type f | grep '[^a-zA-Z0-9_.-]')
-        
-        # Check if any invalid files are found
-        if [ ! -z "$invalid_files" ]; then
-          echo "The following files have invalid characters:"
-          echo "$invalid_files"
-          exit 1  # Exit with an error to prevent further steps
-        else
-          echo "No problematic filenames detected."
-        fi
 
     - name: Generate Readme.txt
       shell: bash
@@ -407,9 +390,9 @@ jobs:
       run: |
         ./wix/candle.exe streamlit_exe.wxs streamlit_exe_files.wxs
         
-    - name: Link .wixobj file into .msi with light.exe
-      run: |
-        ./wix/light.exe -ext WixUIExtension -sice:ICE60 -o ${{ env.APP_NAME }}.msi streamlit_exe_files.wixobj streamlit_exe.wixobj
+    #- name: Link .wixobj file into .msi with light.exe
+    #  run: |
+    #    ./wix/light.exe -ext WixUIExtension -sice:ICE60 -o ${{ env.APP_NAME }}.msi streamlit_exe_files.wixobj streamlit_exe.wixobj
 
     #- name: Delete OpenMS bin artifact
     #  uses: geekyeggo/delete-artifact@v5
@@ -421,4 +404,6 @@ jobs:
       with:
         name: OpenMS-NuXLApp
         path: |
-          ${{ env.APP_NAME }}.msi
+          # ${{ env.APP_NAME }}.msi
+          streamlit_exe
+          
