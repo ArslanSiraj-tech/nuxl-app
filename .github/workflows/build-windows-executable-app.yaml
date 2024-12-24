@@ -187,6 +187,7 @@ jobs:
     - name: Extract bin and share from package
       run: |
         mkdir openms-bin
+        mkdir openms-thirdparty
         cd openms-package
         cp -r OpenMS/bld/bin openms-bin
         cp -r _thirdparty openms-thirdparty
@@ -244,9 +245,10 @@ jobs:
         cp -r pages streamlit_exe
         cp -r assets streamlit_exe
         cp -r example-data streamlit_exe
-        cp -r openms-bin/ streamlit_exe
+        cp -r openms-bin streamlit_exe
+        cp -r openms-thirdparty streamlit_exe
         cp -r .streamlit streamlit_exe
-        #cp -r share streamlit_exe/share
+        cp -r gdpr_consent streamlit_exe
         cp app.py streamlit_exe
         cp settings.json streamlit_exe
 
