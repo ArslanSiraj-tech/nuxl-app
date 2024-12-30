@@ -159,7 +159,7 @@ jobs:
       with:
         name: openms-package
         path: |
-          {{ github.workspace }}/OpenMS/*
+          ${{ github.workspace }}/OpenMS/*
           ${{ github.workspace }}/_thirdparty/*
 
   build-executable:
