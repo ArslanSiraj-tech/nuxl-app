@@ -19,7 +19,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: OpenMS/OpenMS
-        ref: feature/NuXL #release/${{ env.OPENMS_VERSION }}
+        ref: feature/nuxl #release/${{ env.OPENMS_VERSION }}
         path: 'OpenMS'
 
     - name: Install Qt
@@ -41,7 +41,8 @@ jobs:
     - name: Setup build tools
       shell: bash
       run: |
-        choco install ccache ninja cmake
+        choco install ccache ninja -y --no-progress
+        choco install cmake --version=3.31.1 -y --no-progress --force
         ## GH CLI "SHOULD BE" installed. Sometimes I had to manually install nonetheless. Super weird.
         # https://github.com/actions/runner-images/blob/main/images/win/scripts/Installers/Install-GitHub-CLI.ps1
         echo "C:/Program Files (x86)/GitHub CLI" >> $GITHUB_PATH
@@ -135,32 +136,30 @@ jobs:
           CCACHE_COMPRESSLEVEL: 12
           CCACHE_MAXSIZE: 400M
 
-    # - name: Test Windows
-    # shell: bash
-    #  run: ctest --output-on-failure -V -S $GITHUB_WORKSPACE/OpenMS/tools/ci/citest.cmake
-    #  env:
-    #     SOURCE_DIRECTORY: "${{ github.workspace }}/OpenMS"
-    #     CI_PROVIDER: "GitHub-Actions"
-    #     BUILD_NAME: "${{ env.RUN_NAME }}-Win64-class-topp-${{ github.run_number }}"
+    - name: Test Windows
+      shell: bash
+      run: ctest --output-on-failure -V -S $GITHUB_WORKSPACE/OpenMS/tools/ci/citest.cmake
+      env:
+          SOURCE_DIRECTORY: "${{ github.workspace }}/OpenMS"
+          CI_PROVIDER: "GitHub-Actions"
+          BUILD_NAME: "${{ env.RUN_NAME }}-Win64-class-topp-${{ github.run_number }}"
 
-    #- name: Package
-    #  shell: bash
-    #  run: |
-    #      ctest --output-on-failure -V -S $GITHUB_WORKSPACE/OpenMS/tools/ci/cipackage.cmake
-    #  env:
-    #      SOURCE_DIRECTORY: "${{ github.workspace }}/OpenMS"
-    #      PACKAGE_TYPE: zip
-    #      SEARCH_ENGINES_DIRECTORY: "${{ github.workspace }}/_thirdparty"
-    #      CI_PROVIDER: "GitHub-Actions"
-    #      CPACK_PACKAGE_FILE_NAME: "openms-package"
+    - name: Package
+      shell: bash
+      run: |
+          ctest --output-on-failure -V -S $GITHUB_WORKSPACE/OpenMS/tools/ci/cipackage.cmake
+      env:
+          SOURCE_DIRECTORY: "${{ github.workspace }}/OpenMS"
+          PACKAGE_TYPE: zip
+          SEARCH_ENGINES_DIRECTORY: "${{ github.workspace }}/_thirdparty"
+          CI_PROVIDER: "GitHub-Actions"
+          CPACK_PACKAGE_FILE_NAME: "openms-package"
 
     - name: Upload package as artifact
       uses: actions/upload-artifact@v4
       with:
         name: openms-package
-        path: |
-          ${{ github.workspace }}/OpenMS/*
-          ${{ github.workspace }}/_thirdparty/*
+        path: ${{ github.workspace }}/OpenMS/bld/*.zip
 
   build-executable:
     runs-on: windows-latest
